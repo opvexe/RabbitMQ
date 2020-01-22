@@ -116,7 +116,7 @@ func (r *RabbitMQ) ConsumeSimple() {
 		// 用来区分多个消费者
 		"",
 		// 是否自动应答 (消费完了后 是否自动告诉rabbitmq服务 消费完了 默认为true)
-		true,
+		true,		//一般设置为false
 		// 是否具有排他性 (true 就是 创建了自己可见的队列)
 		false,
 		// 如果为true 表示 不能将同一个 connection 中发送的消息传递给这个connection中的消费者 (默认为false)
@@ -135,6 +135,7 @@ func (r *RabbitMQ) ConsumeSimple() {
 	go func() {
 		for d := range message {
 			fmt.Printf("Received a message: %s \n", d.Body)
+			//如果自动应答为false --->  msg.Ack(true)
 		}
 	}()
 
