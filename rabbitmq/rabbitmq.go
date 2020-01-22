@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"github.com/pkg/errors"
 	"github.com/streadway/amqp"
-	"sass-pc-server/utils"
 )
 
 type RabbitMQ struct {
@@ -22,7 +21,7 @@ func NewRabbitMQ(queueName, exchange, key string) (*RabbitMQ, error) {
 		QueueName: queueName,
 		Exchange:  exchange,
 		key:       key,
-		MQURL:     "amqp://music:muisc@127.0.0.1:5672/music_vhost", //amqp://账号:密码服务器地址:端口号/vhost
+		MQURL:     "amqp://guest:guest@127.0.0.1:5672/hello-push", //amqp://账号:密码服务器地址:端口号/vhost
 	}
 	var err error
 	rabbitmq.conn, err = amqp.Dial(rabbitmq.MQURL)
@@ -34,6 +33,12 @@ func NewRabbitMQ(queueName, exchange, key string) (*RabbitMQ, error) {
 		return nil, errors.Wrap(err, "create connect error")
 	}
 	return rabbitmq, nil
+}
+
+//断开连接
+func (r *RabbitMQ) Destory()  {
+	_ = r.channel.Close()
+	_ = r.conn.Close()
 }
 
 // 简单模式&&工作模式
@@ -134,9 +139,6 @@ func (r *RabbitMQ) ConsumeSimple() {
 	}()
 
 	// 等待接受消息
-	//log.Println("[*] Waiting for message, To exit press CTRL+C")
-	utils.DBCNormalLogger.Info("Waiting for message...")
-	// 在没有消息处理后 进行阻塞
 	<-forever
 }
 
@@ -297,6 +299,7 @@ func (r *RabbitMQ) ProduceRouting(message string) error {
 			ContentType: "text/plain",
 			Body:        []byte(message),
 		})
+	return err
 }
 
 //路由模式下接收消息
